@@ -1,0 +1,83 @@
+%let pmonth=05;
+%let pyear=80;
+%let refdate=today();
+data emp7;
+	thisdate=MDY(&pmonth,&pdate,&pyear);
+	set work.empdata;
+	age=&Pyear-year(birthdate);
+	Pname=trim(fname)||" "||Lname;
+	tdate=&REFDATE;
+	where Month(birthdate)=&pmonth;
+	drop thisdate;
+run;
+
+
+
+**correct one;
+
+%let pmonth=06;
+%let today=date();
+data emp7;
+	thisdate=MDY(&pmonth,&pdate,&pyear);
+	set work.empdata;
+	Age=ROUNDE( YRDIF(birthdate,&today,"AGE"), 0.1);
+	Pname=trim(fname)||" "||Lname;
+	where Month(birthdate)=&pmonth;
+	**years at company**;
+	years=ROUNDE(YRDIF(Hiredate,&today,"Years at the company"), 0.1);
+	drop thisdate;
+run;
+
+***method specifying the pyear;
+%let pmonth=07;
+%let today=date();
+%let pyear=1982;
+data emp7;
+	thisdate=MDY(&pmonth,&pdate,&pyear);
+	set work.empdata;
+	Age=ROUNDE( YRDIF(birthdate,&today,"AGE"), 0.1);
+	Pname=trim(fname)||" "||Lname;
+	where Month(birthdate)=&pmonth AND
+	Year(birthdate)=&pyear;
+	**years at company**;
+	years=ROUNDE(YRDIF(Hiredate,&today,"Years at the company"), 0.1);
+	Tmonth=month(birthdate);
+	format tmonth monthfmt.;
+	drop thisdate;
+run;
+
+
+
+
+
+
+
+
+
+
+
+another method
+
+%let pmonth=05;
+
+Data emp10;
+set work.empdata;
+thisdate=MDY(&pmonth,&pyear,&pyear);
+today=date();
+Age=ROUNDE( YRDIF(Birthdate,today,"Age"), 0.1);
+where Month(birthdate)=&pmonth;
+**years at company**;
+	years=ROUNDE(YRDIF(Hiredate,&today,"Years at the company"), 0.1);
+drop thisdate;
+drop today;
+run;
+
+
+proc print data=emp7;
+var IDNUMBER LName FName sex age years ;
+where years>5;
+run;
+
+proc sort data=emp7;
+by descending Age sex;
+run;
