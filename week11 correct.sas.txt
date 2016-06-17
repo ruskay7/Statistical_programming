@@ -1,0 +1,117 @@
+proc report data=week11.tornadoall_2014;
+	column fatalities;
+run;
+Title"No of fatalities";
+Footnote"Rohith Shankar";
+
+
+
+proc contents data=week11.tornadoall_2014;
+run;
+
+Data week11.TORNADO11;
+	set week11.tornadoall_2014;
+	Tmonth=month(date);
+	tdate=day(date);
+	tyear=year(date);
+	Bspring=mdy(3,20,tyear);
+	espring=mdy(6,19,tyear);
+	Bsummer=mdy(6,20,tyear);
+	Esummer=mdy(9,21,tyear);
+	Bfall=Esummer+1;
+	Efall=mdy(12,20,tyear);
+	Bwinter=Efall+1;
+	Ewinter=Bspring-1;
+	if date >=bspring and date <=espring then season=1;
+		else if date>=bsummer and date<=Esummer then season=2;
+			else if date>=bfall and date<=efall then season=3;
+				else  season=4;
+    Thour=hour(time);
+	if thour >=22 or thour <4 then period=1;
+		else if thour>=4 and thour<10 then period=2;
+			else if thour>=10 and thour<16 then period=3;
+				else  period=4;
+	
+	drop bspring espring bsummer bfall efall bwinter ewinter tdate tyear thour;
+run;
+
+*which month has tornadoes more;
+proc freq data=week11.tornado11;
+	table tmonth;
+	run;
+
+proc format;
+	value seasonfmt
+	1='Spring'
+	2='Summer'
+	3='Fall'
+	4='Winter';
+run;
+
+proc format;
+value monthfmt
+	1='January'
+	2='February'
+	3='March'
+	4='April'
+	5='May'
+	6='June'
+	7='July'
+	8='August'
+	9='September'
+	10='October'
+	11='November'
+	12='December';
+run;
+Title"frequency of death by month and season";
+	*which season and month has death bytornado;
+proc freq data=week11.tornado11;
+	table tmonth season;
+	format season seasonfmt.;
+	format tmonth monthfmt.;
+run;
+
+
+Title "Number of death";
+proc freq data=week11.tornado11;
+	table tmonth season;
+	format season seasonfmt.;
+	format tmonth monthfmt.;
+	weight fatalities;
+run;
+
+proc freq data=week11.tornado11;
+	table Season* Fujita;
+	format Season seasonfmt.;
+run;
+
+proc freq data=week11.tornado11;
+	table season *fujita /nocum chisq nofreq nopercent;
+	format season seasonfmt.;
+run;
+
+proc format;
+	value periodfmt
+	1='period 1'
+	2='period 2'
+	3='period 3'
+	4='period 4';
+run;
+
+proc freq data=week11.tornado11;
+	table period* season;
+	format Season seasonfmt. ;
+	format period periodfmt.;
+run;
+proc sort data=week11.tornado11 out=sorted ;
+    by descending fatalities;
+run;
+
+proc print data=sorted;
+    var fatalities state1;
+run;
+title'No of deaths by state in descending order';
+proc freq data=week11.tornado11 order=freq;
+	table  state1/ nocum nopercent;
+	weight fatalities;
+run;
